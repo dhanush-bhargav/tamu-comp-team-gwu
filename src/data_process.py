@@ -25,13 +25,11 @@ def data_preprocess(type):
     # print(rxclms_df.head())
     # data_crud.save_data(rxclms_df, type, "rxclms_clean")
 
-    # all_data = []
+    all_data = []
 
-    # for name, group in target_df.groupby("therapy_id"):
-    #     all_data.append((group, medclms_df[medclms_df["therapy_id"] == name], rxclms_df[rxclms_df["therapy_id"] == name]))
-    
+    rxclms_df.drop(columns=["pay_day_supply_cnt"], inplace=True)
     target_df["therapy_start_date"] = pd.to_datetime(target_df["therapy_start_date"])
-    target_df["therapy_end_date"] = pd.to_datetime(target_df["therapy_end_date"])
+    # target_df["therapy_end_date"] = pd.to_datetime(target_df["therapy_end_date"])
     medclms_df["visit_date"] = pd.to_datetime(medclms_df["visit_date"])
     rxclms_df["service_date"] = pd.to_datetime(rxclms_df["service_date"])
 
@@ -46,29 +44,32 @@ def data_preprocess(type):
     all_data = []
 
     for name, group in target_df.groupby("therapy_id"):
-        start_date = pd.to_datetime(group["therapy_start_date"].values[0] - pd.Timedelta(90, 'days'), utc=True)
-        end_date = pd.to_datetime(group["therapy_end_date"].values[0], utc=True)
+        start_date = pd.to_datetime(group["therapy_start_date"].values[0], utc=True)
+        # end_date = pd.to_datetime(group["therapy_end_date"].values[0], utc=True)
         
         medclms = medclms_df[(medclms_df["therapy_id"] == name)].resample('D').max(numeric_only=True)
         medclms = medclms[(medclms.index >= start_date)]
-        medclms = medclms[(medclms.index <= end_date)]
+        # medclms = medclms[(medclms.index <= end_date)]
         medclms = medclms.resample('M').sum()
        
         rxclms = rxclms_df[(rxclms_df["therapy_id"] == name)].resample('D').max(numeric_only=True)
         rxclms = rxclms[(rxclms.index >= start_date)]
-        rxclms = rxclms[(rxclms.index <= end_date)]
+        # rxclms = rxclms[(rxclms.index <= end_date)]
         rxclms = rxclms.resample('M').sum()
 
         medclms = medclms.merge(rxclms, "outer", left_index=True, right_index=True).fillna(0)
 
         if len(medclms) > 0:
-            clm_data = {"patient_data": group, "claim_data": medclms}
-            all_data.append(clm_data)
+            try:
+                medclms.drop(columns=["therapy_id"], inplace=True)
+            except:
+                None
+            clm_data = pd.concat([group, medclms], axis=1).sum(numeric_only=True)
+            all_data.append(pd.concat([pd.Series({"therapy_id": name}), clm_data]))
 
-    return all_data
+    return pd.DataFrame(all_data)
 
 
 if __name__ == "__main__":
-    processed_data = data_preprocess("train")
-    with open('all_data.pickle', 'wb') as f:
-        pickle.dump(processed_data, f)
+    processed_data = data_preprocess("holdout")
+    data_crud.save_data(processed_data, "holdout", "collated")

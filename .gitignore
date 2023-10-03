@@ -9,3 +9,12 @@ data/training/target_clean_train.csv
 data/training/target_train.csv
 src/__pycache__/CONSTANTS.cpython-311.pyc
 src/__pycache__/data_crud.cpython-311.pyc
+data/training/collated_train.csv
+data/training/training_data.pt
+.gitignore
+data/holdout/collated_holdout.csv
+data/holdout/medclms_clean_holdout.csv
+data/holdout/predictions_holdout.csv
+data/holdout/rxclms_clean_holdout.csv
+data/holdout/submission_holdout.csv
+data/holdout/target_clean_holdout.csv
