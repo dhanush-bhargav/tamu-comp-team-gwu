@@ -18,3 +18,5 @@ data/holdout/predictions_holdout.csv
 data/holdout/rxclms_clean_holdout.csv
 data/holdout/submission_holdout.csv
 data/holdout/target_clean_holdout.csv
+data/training/collated_ready_train.csv
+data/holdout/collated_ready_holdout.csv

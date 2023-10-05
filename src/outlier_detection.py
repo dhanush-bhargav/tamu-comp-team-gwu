@@ -16,9 +16,9 @@ train = train.drop(columns=["tgt_ade_dc_ind"])
 test = test.drop(columns=["tgt_ade_dc_ind"])
 
 
-# model = xgboost.XGBClassifier(max_depth=10, n_estimators=100, objective="binary:logistic")
-# model.fit(train, train_labels)
+model = xgboost.XGBClassifier(max_depth=10, n_estimators=16, objective="binary:logistic")
+model.fit(train, train_labels, eval_metric="auc", eval_set=[(test, test_labels)], verbose=True)
 
-# print(roc_auc_score(test_labels, model.predict_proba(test).T[1]))
+print(roc_auc_score(test_labels, model.predict_proba(test).T[1]))
 
-# model.save_model("xgboost_model.json")
+model.save_model("xgboost_model.json")
